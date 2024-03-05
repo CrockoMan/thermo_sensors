@@ -13,7 +13,7 @@ DIO_PIN  - Порт подключения TM1637 DIO</br>
 CLK_PIN  - Порт подключения TM1637 CLK</br>
 TEMP_SENSOR_PIN - Порт подключения DS18B20</br></br>
 
-Пример конфигурации:</br>
+Пример конфигурации esp8266:</br>
 #define SERVER_POST_MESSAGE_INTERVAL_x10ms 10*5</br>
 #define SERVER_IP "http://domain_name.com/api/sensors/"</br>
 #define WIFI_SSID "WiFi SSID"</br>
