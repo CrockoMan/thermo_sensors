@@ -22,4 +22,7 @@ TEMP_SENSOR_PIN - Порт подключения DS18B20</br></br>
 #define RELAY_PIN 0</br>
 #define DIO_PIN 4</br>
 #define CLK_PIN 5</br>
-#define TEMP_SENSOR_PIN 2</br>
+#define TEMP_SENSOR_PIN 2</br></br>
+
+
+Документация API backend доступна по адресу: http://domain_name/docs</br>
