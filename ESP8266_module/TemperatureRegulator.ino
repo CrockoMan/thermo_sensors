@@ -19,11 +19,11 @@
 #define SERVER_POST_MESSAGE_INTERVAL_x10ms 10*5
 //#define SERVER_IP "192.168.1.42"
 //#define SERVER_IP "192.168.0.8:8000"
-#define SERVER_IP "http://jsonplaceholder.typicode.com/users"
+#define SERVER_IP "http://domain_name.com/api/sensors/"
 
 
-#define WIFI_SSID "Bonus"
-#define WIFI_PASS "8613335976"
+#define WIFI_SSID "WiFi SSID"
+#define WIFI_PASS "WiFi Password"
 
 #define LED_PIN 16
 #define LED_ON  digitalWrite(16, LOW)
