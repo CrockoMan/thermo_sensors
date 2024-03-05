@@ -8,6 +8,12 @@
     <title>Датчики</title>
 </head>
 <body>
-    Датчики
+    <div>
+        {% for sensor in sensors %}
+        <div>
+            {{ sensor.name }}
+        </div>
+        {% endfor %}
+    </div>
 </body>
 </html>
