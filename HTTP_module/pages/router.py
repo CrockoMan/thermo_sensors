@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 
 from sensors.router import get_sensors
 
-router_pages = APIRouter(prefix="/pages", tags=["frontend"])
+router_pages = APIRouter(prefix="", tags=["frontend"])
 
 templates = Jinja2Templates(directory="templates")
 
