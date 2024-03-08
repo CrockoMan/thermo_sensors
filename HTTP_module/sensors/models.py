@@ -20,6 +20,9 @@ class Sensor(Base):
     sensor_data_relation = relationship('SensorData',
                                         back_populates="sensor_relation")
 
+    def __str__(self):
+        return f'{self.name} {self.description[:20]}'
+
 
 
 class SensorData(Base):
@@ -33,3 +36,7 @@ class SensorData(Base):
 
     sensor_relation = relationship('Sensor',
                                    back_populates="sensor_data_relation")
+
+    def __str__(self):
+        return (f'{self.registered_at.strftime("%d-%m-%Y %H:%M")}'
+                f' {self.sensor_value}°')

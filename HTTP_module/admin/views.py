@@ -4,7 +4,7 @@ from sensors.models import Sensor, SensorData
 
 
 class SensorAdmin(ModelView, model=Sensor):
-    column_list = [Sensor.id, Sensor.name]
+    column_list = [Sensor.id, Sensor.name, Sensor.sensor_data_relation]
     column_details_exclude_list = ['secretkey',]
     can_delete = False
     name = 'Контроллеры'
@@ -14,7 +14,8 @@ class SensorAdmin(ModelView, model=Sensor):
 class SensorDataAdmin(ModelView, model=SensorData):
     column_list = [SensorData.id,
                    SensorData.sensor_value,
-                   SensorData.registered_at]
+                   SensorData.registered_at,
+                   SensorData.sensor_relation]
     # column_details_exclude_list = ['secretkey',]
     can_delete = False
     name = 'Измерения'
