@@ -10,7 +10,8 @@ class Location(models.Model):
     description = models.TextField('Описание')
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
-                             related_name='location'
+                             related_name='location_user'
+                             # related_name='location'
                              )
 
     class Meta:
@@ -25,7 +26,10 @@ class Location(models.Model):
 class Sensor(models.Model):
     name = models.CharField('Наименование',max_length=50)
     description = models.TextField('Описание')
-    location = models.ForeignKey(Location,on_delete=models.CASCADE)
+    location = models.ForeignKey(Location,
+                                 on_delete=models.CASCADE,
+                                 related_name='location'
+                                 )
 
     class Meta:
         verbose_name = 'Датчик'

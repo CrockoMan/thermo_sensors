@@ -1,11 +1,41 @@
+from http import HTTPStatus
+
 from rest_framework import serializers
 
 from sensors.models import Sensor, Location, SensorData
+from users.models import User
+
+
+class AddSensorDataSerializer(serializers.Serializer):
+    """Новое измерение."""
+
+    username = serializers.CharField()
+    password = serializers.CharField()
+    sensor_id = serializers.IntegerField()
+    sensor_data = serializers.FloatField()
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+        sensor_id = data.get('sensor_id')
+        # sensor_data = data.get('sensor_data')
+
+        if not User.objects.filter(username=username).exists():
+            raise serializers.ValidationError(detail='Ошибка')
+        user = User.objects.get(username=username)
+        if not user.check_password(password):
+            raise serializers.ValidationError(detail='Ошибка')
+        if (not Sensor.objects.filter(id=sensor_id).exists()
+            or not Sensor.objects.get(
+                    id=sensor_id).location.user.username == username
+        ):
+            raise serializers.ValidationError(detail='Sensor not exists')
+        return data
+
 
 
 class SensorDataSerializer(serializers.ModelSerializer):
-    """Получение информации о произведениях."""
-
+    """Получение информации о измерениях."""
 
     class Meta:
         model = SensorData
