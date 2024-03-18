@@ -29,7 +29,7 @@ TODO:</br>
 Android приложение с функцией мониторинга и управления</br>
 </br>
 
-Настройка подключения ESP8266</br>
+Настройка подключения ESP8266 выполняется в settings.h</br>
 SERVER_IP - адрес API сервера</br>
 SERVER_POST_MESSAGE_INTERVAL_x10ms - Интервал обмена данными с API сервера кратный 10us</br>
 WIFI_SSID - SSID точки доступа WiFi</br>
