@@ -1,0 +1,13 @@
+#define SERVER_IP "http://domain_name.com/api/sensors/"
+#define MEASUREMENT_ENDPOINT "measurement/"
+#define SETTINGS_ENDPOINT "settings/"
+#define USER_LOGIN "user_name"
+#define USER_PASSWORD "user_password"
+#define SENSOR_ID 1
+
+
+#define WIFI_SSID "WiFi SSID"
+#define WIFI_PASS "WiFi Password"
+
+
+
