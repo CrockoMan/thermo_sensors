@@ -43,9 +43,6 @@ class AddSensorSettingsSerializer(SensorCommonSerializer):
     sensor_settings = serializers.FloatField()
 
 
-class ReadSensorSettingsSerializer(SensorCommonSerializer):
-    pass
-
 class SensorDataSerializer(serializers.ModelSerializer):
     """Получение информации о измерениях."""
 
@@ -55,14 +52,8 @@ class SensorDataSerializer(serializers.ModelSerializer):
 
 
 class SensorSerializer(serializers.ModelSerializer):
-    # author = serializers.SlugRelatedField(read_only=True,
-    #                                       slug_field='username')
     location = serializers.SlugRelatedField(slug_field='name',
                                             read_only=True)
-    # sensor_data = SensorDataSerializer(many=True,
-    #                                    read_only=True,
-    #                                    source='sensor'
-    #                                    )
     sensor_data = serializers.SerializerMethodField()
 
     class Meta:
@@ -79,8 +70,6 @@ class SensorSerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(serializers.ModelSerializer):
-    # author = serializers.SlugRelatedField(read_only=True,
-    #                                       slug_field='username')
 
     class Meta:
         model = Location

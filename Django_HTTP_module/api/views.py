@@ -5,8 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from api.serializers import (ReadSensorSettingsSerializer, SensorSerializer,
-                             LocationSerializer,
+from api.serializers import (SensorSerializer, LocationSerializer,
                              AddSensorDataSerializer,
                              AddSensorSettingsSerializer)
 from sensors.models import Sensor, Location, SensorData, SensorSettings
@@ -39,20 +38,22 @@ class SensorViewSet(viewsets.ModelViewSet):
         return Response({'Sensor': 'Measurement saved'},
                         status=HTTPStatus.OK)
 
-    @action(methods=['post', 'get'], url_path='settings', detail=False)
-    def sensor_settings(self, request):
+    @action(methods=['post', 'get'], url_path='settings/(?P<pk>[^/.]+)?',
+            detail=False)
+    def sensor_settings(self, request, pk):
         """Запись и чтение уставок датчика."""
+        sensor_id = int(pk)
+        sensor = get_object_or_404(Sensor, id=sensor_id)
         if self.request.method == "POST":
             serializer = AddSensorSettingsSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
-            sensor_id = int(serializer.validated_data.get('sensor_id'))
+            # sensor_id = int(serializer.validated_data.get('sensor_id'))
             sensor_settings = float(
                 serializer.validated_data.get('sensor_settings')
             )
             try:
                 sensor = get_object_or_404(Sensor, id=sensor_id)
-                # sensor = Sensor.objects.get(id=sensor_id)
                 SensorSettings.objects.create(sensor_settings=sensor_settings,
                                               sensor=sensor)
             except Exception as e:
@@ -62,17 +63,13 @@ class SensorViewSet(viewsets.ModelViewSet):
             return Response({'Sensor': 'Settings saved'},
                             status=HTTPStatus.OK)
         if self.request.method == "GET":
-            serializer = ReadSensorSettingsSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            sensor_id = int(serializer.validated_data.get('sensor_id'))
-            sensor = get_object_or_404(Sensor, id=sensor_id)
             settings = SensorSettings.objects.order_by(
                 '-sensor_datetime').filter(sensor=sensor)
-            if not settings:
-                return Response({'Error': 'Nothing to get'},
-                                status=HTTPStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
-            return Response({'setting': settings[0].sensor_settings},
-                            status=HTTPStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
+            if settings:
+                return Response({'setting': settings[0].sensor_settings},
+                                status=HTTPStatus.OK)
+        return Response({'Error': 'Nothing to get'},
+                        status=HTTPStatus.NO_CONTENT)
 
 
 class LocationViewSet(viewsets.ReadOnlyModelViewSet):

@@ -6,9 +6,7 @@
 #include <GyverSegment.h>
 #include <GyverRelay.h>
 #include <microDS18B20.h>
-#include <StringUtils.h>
-#include <GSON.h>
-#include "settings.h"
+
 
 
 #define SHOW_TEMP 0
@@ -16,13 +14,16 @@
 #define SHOW_TARGET_TEMP 2
 #define ADJUST_TARGET_TEMP 3
 
-#define MIN_SENSOR_VALUE 18
-#define MAX_SENSOR_VALUE 35
-
 #define TEMP_READ_INTERVAL_x10ms 5
 
-#define SERVER_POST_MESSAGE_INTERVAL_x10ms 10*10
+#define SERVER_POST_MESSAGE_INTERVAL_x10ms 10*5
+//#define SERVER_IP "192.168.1.42"
+//#define SERVER_IP "192.168.0.8:8000"
+#define SERVER_IP "http://jsonplaceholder.typicode.com/users"
 
+
+#define WIFI_SSID "Bonus"
+#define WIFI_PASS "8613335976"
 
 #define LED_PIN 16
 #define LED_ON  digitalWrite(16, LOW)
@@ -44,12 +45,11 @@ GyverRelay regulator(NORMAL);
 
 Ticker Timer;
 
-volatile unsigned char TimerTick=0, LedTimerTicker=0, isTicker=0,
-                       CustomTimerTicker=0, SensorTimer=0, ReadTempComplete=0;
+volatile unsigned char TimerTick=0, LedTimerTicker=0, isTicker=0, CustomTimerTicker=0, SensorTimer=0;
 volatile unsigned int http_timer=0;
-char CurrentTemp;
+char TargetTemp, CurrentTemp;
 unsigned char TempTimer, Brightness, WiFiConnected, CurrentMode=SHOW_TEMP;
-float TempFloat=0, TargetTemp=29;
+float TempFloat=0;
 
 
 EncButton eb(13, 12, 14);
@@ -75,6 +75,12 @@ void timerIsr()
   if(CustomTimerTicker<10) CustomTimerTicker++;
   else                     CustomTimerTicker = 0;
 
+/*
+//  if(SensorTimer<TEMP_READ_INTERVAL_x10ms)  SensorTimer++;
+//  else                                      SensorTimer=0;
+  SensorTimer++;
+*/
+//-------------------------------
   if(SensorTimer<TEMP_READ_INTERVAL_x10ms)  SensorTimer++;
   else
   {
@@ -84,52 +90,39 @@ void timerIsr()
     CurrentTemp=TempFloat;
     regulator.input = TempFloat;                      // сообщаем регулятору текущую температуру
     digitalWrite(RELAY_PIN, regulator.getResult());   // отправляем на реле (ОС работает по своему таймеру)
-    ReadTempComplete=1;
   }
+//-------------------------
   http_timer++;
 }
 
 
 void SaveSettings()
 {
-    EEPROM.begin(512);
-    EEPROM.write(0, TargetTemp);
-    EEPROM.write(1, Brightness);
-    EEPROM.commit();
+    EEPROM.begin(512);  // Инициализация EEPROM с размером 512 байт
+    EEPROM.write(0, TargetTemp);  // Запись данных
+    EEPROM.write(1, Brightness);  // Запись данных
+    EEPROM.commit();                 // Сохранение изменений
 
     regulator.setpoint = TargetTemp;
 }
 
 
-void CheckAndSaveSettings()
-{
-  if(TargetTemp<MIN_SENSOR_VALUE || TargetTemp>MAX_SENSOR_VALUE)
-  {
-    TargetTemp = MIN_SENSOR_VALUE + (MAX_SENSOR_VALUE-MIN_SENSOR_VALUE)/2;
-    SaveSettings();
-  }
-  if(Brightness>7)
-  {
-    Brightness = 1;
-    SaveSettings();
-  }
-}
 
 unsigned char ReadTemp()
 {
-    EEPROM.begin(512);
-    TargetTemp = EEPROM.read(0);
+    EEPROM.begin(512);  // Инициализация EEPROM с размером 512 байт
+    TargetTemp = EEPROM.read(0);  // Чтение данных
     return(TargetTemp);
 }
 
 unsigned char ReadBrightness()
 {
-    EEPROM.begin(512);
-    Brightness = EEPROM.read(1);
+    EEPROM.begin(512);  // Инициализация EEPROM с размером 512 байт
+    Brightness = EEPROM.read(1);  // Чтение данных
     return(Brightness);
 }
 
-void ShowTemp(float Temp)
+void ShowTemp(unsigned char Temp)
 {
   disp.brightness(Brightness);
   disp.setCursor(0);
@@ -138,21 +131,22 @@ void ShowTemp(float Temp)
       disp.print(" ");
   }
   disp.print(Temp);
-  disp.setCursor(3);
-  disp.print("*");
-  if(CurrentMode == ADJUST_TARGET_TEMP && LedTimerTicker>=5)
+  disp.setCursor(2);
+  disp.print("*C");
+  if(CurrentMode == ADJUST_TARGET_TEMP && LedTimerTicker>=5) 
   {
-    disp.setCursor(3);
+    disp.setCursor(2);
     disp.print(" ");
   }
   disp.update();
+//  disp.delay(1000);
 }
 
 
 
 void setup() {
-  int address = 0;
-  byte value_w;
+  int address = 0; // адрес памяти для записи (от 0 до 511)
+  byte value_w; // значение данных (от 0 до 255)
   unsigned char connect_attempt = 10;
   CurrentTemp = 22;
 
@@ -172,7 +166,17 @@ void setup() {
 //--------------------------------------------------- Чтение уставки температуры
   TargetTemp = ReadTemp();
   Brightness = ReadBrightness();
-  CheckAndSaveSettings();
+  if(TargetTemp<18 || TargetTemp>35) 
+  {
+    TargetTemp = 18;
+    SaveSettings();
+  }
+  if(Brightness>7) 
+  {
+    Brightness = 1;
+    SaveSettings();
+  }
+  TargetTemp = ReadTemp();
 
 
 // Инициализация регулятора
@@ -206,10 +210,12 @@ void setup() {
   }
   else
   {
-    Serial.println("WiFi Connection ERROR");
+    Serial.println("WiFi Connected ERROR");
+
   }
 
   eb.setEncReverse(1);
+//  eb.setEncType(EB_STEP1);
 
 
   ShowTemp(CurrentTemp);  // Вывод текущей температуры
@@ -217,70 +223,31 @@ void setup() {
 }
 
 
-void post_measurement(float temp)
+void post_data(float temp)
 {
-  gson::string gs;
-
-    // Формирование JSON 
-    gs.beginObj();
-    gs["username"] = USER_LOGIN;
-    gs["password"] = USER_PASSWORD;
-    gs["sensor_id"] = (int32_t)SENSOR_ID;
-    gs["sensor_data"] = temp;
-    gs.endObj();
-    gs.end();
-    Serial.println(gs);
-
-    post_data(gs, String(SERVER_IP) + String(MEASUREMENT_ENDPOINT));
-}
-
-
-void post_settings()
-{
-  gson::string gs;
-
-    // Формирование JSON
-    gs.beginObj();
-    gs["username"] = USER_LOGIN;
-    gs["password"] = USER_PASSWORD;
-    gs["sensor_id"] = (int32_t)SENSOR_ID;
-    gs["sensor_settings"] = TargetTemp;
-    gs.endObj();
-    gs.end();
-    Serial.println(gs);
-
-    post_data(gs, String(SERVER_IP) + String(SETTINGS_ENDPOINT)
-              + String(SENSOR_ID)+"/");
-}
-
-
-void post_data(String json, String endpoint)
-{
-  int httpCode;
-
   if ((WiFi.status() == WL_CONNECTED)) 
   {
-    Serial.println(WiFi.localIP());
 
     WiFiClient client;
     HTTPClient http;
 
     Serial.print("[HTTP] begin...\n");
-    Serial.println(endpoint);
-    http.begin(client, endpoint);  // HTTP
+    // configure traged server and url
+//    http.begin(client, "http://" SERVER_IP "/postplain/");  // HTTP
+    http.begin(client, SERVER_IP);  // HTTP
     http.addHeader("Content-Type", "application/json");
 
     Serial.print("[HTTP] POST...\n");
+    // start connection and send HTTP header and body
+    int httpCode = http.POST("{\"hello\":\"world\"}");
 
-    httpCode = http.POST(json);
-
-    if (httpCode > 0)
-    {
+    // httpCode will be negative on error
+    if (httpCode > 0) {
       // HTTP header has been send and Server response header has been handled
       Serial.printf("[HTTP] POST... code: %d\n", httpCode);
 
-      if (httpCode == HTTP_CODE_OK)
-      {
+      // file found at server
+      if (httpCode == HTTP_CODE_OK) {
         const String& payload = http.getString();
         Serial.println("received payload:\n<<");
         Serial.println(payload);
@@ -296,73 +263,10 @@ void post_data(String json, String endpoint)
   }
 }
 
-
-void get_data()
-{
-  int httpCode;
-  gson::Parser parsed;
-
-  if ((WiFi.status() == WL_CONNECTED))
-  {
-    Serial.println(WiFi.localIP());
-
-    WiFiClient client;
-    HTTPClient http;
-
-    String endpoint = String(SERVER_IP) + String(SETTINGS_ENDPOINT+
-                      String(SENSOR_ID)+"/");
-
-    Serial.print("[HTTP] begin...\n");
-    Serial.println(endpoint);
-    http.begin(client, endpoint);  // HTTP
-    http.addHeader("Content-Type", "application/json");
-
-    Serial.print("[HTTP] GET...\n");
-
-    httpCode = http.GET();
-    if (httpCode > 0)
-    {
-      Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-
-      if (httpCode == HTTP_CODE_OK)
-      {
-        String payload = http.getString();
-        Serial.println("received payload:\n<<");
-        Serial.println(payload);
-        Serial.println(">>");
-
-        parsed.parse(payload);
-        if(parsed.hasError())
-        {
-          Serial.print(parsed.readError());
-        }
-        else
-        {
-          float new_value = parsed["setting"];
-          Serial.println(new_value);
-          Serial.println("OK read json");
-          if(new_value!=TargetTemp)
-          {
-            TargetTemp = new_value;
-            CheckAndSaveSettings();
-            Serial.println("New settings saved");
-          }
-        }
-
-      }
-    }
-    else
-    {
-      Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString
-      (httpCode).c_str());
-    }
-    http.end();
-  }
-}
-
-
 void loop() 
 {
+  // unsigned char TempTimer=0;
+  
   if(TimerTick==0) LED_ON;
   if(TimerTick==1) LED_OFF;
 
@@ -376,7 +280,7 @@ void loop()
       if(Brightness!=0) 
       {
         Brightness--;
-        CheckAndSaveSettings();
+        SaveSettings();
         ShowTemp(CurrentTemp);
       }
       Serial.print("Brightness = ");
@@ -391,7 +295,7 @@ void loop()
       if(Brightness!=7) 
       {
         Brightness++;
-        CheckAndSaveSettings();
+        SaveSettings();
         ShowTemp(CurrentTemp);
       }
       Serial.print("Brightness = ");
@@ -437,8 +341,6 @@ void loop()
       CurrentMode = SHOW_TEMP;
       Serial.println("SHOW_TEMP Mode");
       ShowTemp(CurrentTemp);
-      CheckAndSaveSettings();
-      post_settings();
     }
   }
 
@@ -447,18 +349,18 @@ void loop()
     if (eb.left())
     {
       Serial.println("ADJUST_TARGET_TEMP TargetTemp--");
-      if(TargetTemp>MIN_SENSOR_VALUE)
+      if(TargetTemp>15) 
       {
-        TargetTemp = TargetTemp-0.1;
+        TargetTemp--;
         ShowTemp(TargetTemp);
       }
     }
     if (eb.right())
     {
       Serial.println("ADJUST_TARGET_TEMP TargetTemp++");
-      if(TargetTemp<MAX_SENSOR_VALUE)
+      if(TargetTemp<35) 
       {
-        TargetTemp = TargetTemp+0.1;
+        TargetTemp++;
         ShowTemp(TargetTemp);
       }
     }
@@ -468,27 +370,60 @@ void loop()
       {
         isTicker=0;
         ShowTemp(TargetTemp);
+        SaveSettings();
       }
     }
   }
 
-
-  if(ReadTempComplete==1)        // Вывод показаний датчика
+/*
+  if(SensorTimer>=TEMP_READ_INTERVAL_x10ms)        // Чтение датчика
   {
-    ReadTempComplete=0;
+    SensorTimer=0;
+    TempFloat=sensor1.getTemp();
+    sensor1.requestTemp();
+    CurrentTemp=TempFloat;
+    Serial.print("Current temp = ");
+    Serial.println(TempFloat);
+
+    regulator.input = TempFloat;                      // сообщаем регулятору текущую температуру
+    digitalWrite(RELAY_PIN, regulator.getResult());   // отправляем на реле (ОС работает по своему таймеру)
+    if(CurrentMode == SHOW_TEMP)  ShowTemp(CurrentTemp);
+  }
+*/
+  if(SensorTimer==0)        // Вывод показаний датчика
+  {
+    SensorTimer=1;
     Serial.print("Current temp = ");
     Serial.println(TempFloat);
     if(CurrentMode == SHOW_TEMP)  ShowTemp(CurrentTemp);
   }
 
-  if(http_timer >= SERVER_POST_MESSAGE_INTERVAL_x10ms)    // Отправка данных на сервер
+  if(http_timer >= SERVER_POST_MESSAGE_INTERVAL_x10ms)
   {
     http_timer=0;
-    if(CurrentMode == SHOW_TEMP)
-    {
-      post_measurement(TempFloat);
-      get_data();
-    }
+    post_data(TempFloat);
   }
+
+
+  // if(TimerTick==0)
+  // {
+  //   Serial.print("Mode=");
+  //   Serial.print(CurrentMode);
+  //   Serial.print("     LedTimerTick=");
+  //   Serial.print(LedTimerTick);
+  //   Serial.print("   TempTimer=");
+  //   Serial.print(TempTimer);
+  //   Serial.println();
+  // }
+
+
+  // if (eb.left()) Serial.println("left");
+  // if (eb.right()) Serial.println("right");
+  // if (eb.leftH()) Serial.println("leftH");
+  // if (eb.rightH()) Serial.println("rightH");
+
+  // if (eb.press()) Serial.println("press");
+  // if (eb.click()) Serial.println("click");
+  // if (eb.hold())  Serial.println("hold");
 
 }
