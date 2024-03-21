@@ -488,5 +488,4 @@ void loop()
     get_data();
     http_timer=0;
   }
-
 }
