@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>Material Design for Bootstrap</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
+  <!-- MDB -->
+  <link rel="stylesheet" href="{% static 'css/mdb.min.css' %}" />
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw=="
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <!--Main Navigation-->
+  <header>
+    <!-- Sidebar -->
+    <nav id="sidebarMenu" class="collapse d-lg-block sidebar collapse bg-white">
+      <div class="position-sticky">
+        <div class="list-group list-group-flush mx-3 mt-4">
+
+        {% for sensor in sensors %}
+<!--            {{ sensor.id }} {{ sensor.name }} {{ sensor.description }} {{sensor.location.name }} -->
+          <a href="#" class="list-group-item list-group-item-action py-2" data-mdb-ripple-init><i
+              class="fas fa-chart-line fa-fw me-3"></i><span>{{ sensor.name }}</span></a>
+        {% endfor %}
+
+        </div>
+      </div>
+    </nav>
+    <!-- Sidebar -->
+
+    <!-- Navbar -->
+    <nav id="main-navbar" class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+      <!-- Container wrapper -->
+      <div class="container-fluid">
+        <!-- Toggle button -->
+        <button class="navbar-toggler" type="button" data-mdb-collapse-init data-mdb-target="#sidebarMenu"
+          aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+          <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Brand -->
+<!--
+        <a class="navbar-brand" href="#">
+          <img src="https://mdbootstrap.com/img/logo/mdb-transaprent-noshadows.png" height="25" alt="" loading="lazy" />
+        </a>
+-->
+        <!-- Search form -->
+<!--
+        <form class="d-none d-md-flex input-group w-auto my-auto">
+          <input autocomplete="off" type="search" class="form-control rounded"
+            placeholder='Search (ctrl + "/" to focus)' style="min-width: 225px" />
+          <span class="input-group-text border-0"><i class="fas fa-search"></i></span>
+        </form>
+-->
+        <!-- Right links -->
+        <ul class="navbar-nav ms-auto d-flex flex-row">
+
+          <!-- Avatar -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle hidden-arrow d-flex align-items-center" href="#"
+              id="navbarDropdownMenuLink" role="button" data-mdb-dropdown-init aria-expanded="false">
+              <img src="https://mdbootstrap.com/img/Photos/Avatars/img (31).jpg" class="rounded-circle" height="22"
+                alt="" loading="lazy" />
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="#">My profile</a></li>
+              <li><a class="dropdown-item" href="#">Settings</a></li>
+              <li><a class="dropdown-item" href="#">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <!-- Container wrapper -->
+    </nav>
+    <!-- Navbar -->
+  </header>
+  <!--Main Navigation-->
+
+  <!--Main layout-->
+  <main style="margin-top: 58px">
+    <div class="container pt-4">
+      <!-- Section: Main chart -->
+<!--
+      <section class="mb-4">
+        <div class="card">
+          <div class="card-header py-3">
+            <h5 class="mb-0 text-center"><strong>Sales</strong></h5>
+          </div>
+          <div class="card-body">
+            <canvas class="my-4 w-100" id="myChart" height="380"></canvas>
+          </div>
+        </div>
+      </section>
+-->
+      <!-- Section: Main chart -->
+
+        <div class="row">
+          <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between p-md-1">
+                  <div class="d-flex flex-row">
+                    <div class="align-self-center">
+                      <h2 class="h1 mb-0 me-4">26.00 °C</h2>
+                    </div>
+                    <div>
+                      <h4>Измерено</h4>
+                      <p class="mb-0">Дата/время</p>
+                    </div>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="far fa-heart text-danger fa-3x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between p-md-1">
+                  <div class="d-flex flex-row">
+                    <div class="align-self-center">
+                      <h2 class="h1 mb-0 me-4">$26.30 °C</h2>
+                    </div>
+                    <div>
+                      <h4>Установлено</h4>
+                      <p class="mb-0">Дата/время</p>
+                    </div>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="fas fa-heart text-success fa-3x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!--Section: Statistics with subtitles-->
+
+      <!--Section: Sales Performance KPIs-->
+      <section class="mb-4">
+        <div class="card">
+          <div class="card-header text-center py-3">
+            <h5 class="mb-0 text-center">
+              <strong>История измерений</strong>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover text-nowrap">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Product Detail Views</th>
+                    <th scope="col">Unique Purchases</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Product Revenue</th>
+                    <th scope="col">Avg. Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Value</th>
+                    <td>18,492</td>
+                    <td>228</td>
+                    <td>350</td>
+                    <td>$4,787.64</td>
+                    <td>$13.68</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Percentage change</th>
+                    <td>
+                      <span class="text-danger">
+                        <i class="fas fa-caret-down me-1"></i><span>-48.8%%</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-success">
+                        <i class="fas fa-caret-up me-1"></i><span>14.0%</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-success">
+                        <i class="fas fa-caret-up me-1"></i><span>46.4%</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-success">
+                        <i class="fas fa-caret-up me-1"></i><span>29.6%</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-danger">
+                        <i class="fas fa-caret-down me-1"></i><span>-11.5%</span>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Absolute change</th>
+                    <td>
+                      <span class="text-danger">
+                        <i class="fas fa-caret-down me-1"></i><span>-17,654</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-success">
+                        <i class="fas fa-caret-up me-1"></i><span>28</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-success">
+                        <i class="fas fa-caret-up me-1"></i><span>111</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-success">
+                        <i class="fas fa-caret-up me-1"></i><span>$1,092.72</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="text-danger">
+                        <i class="fas fa-caret-down me-1"></i><span>$-1.78</span>
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!--Section: Sales Performance KPIs-->
+
+    </div>
+  </main>
+  <!--Main layout-->
+  <!-- MDB -->
+  <script type="text/javascript" src={% static "js/mdb.umd.min.js" %}></script>
+  <!-- Custom scripts -->
+  <script type="text/javascript" src={% static "js/admin.js"%}></script>
+
+</body>
+
+</html>
