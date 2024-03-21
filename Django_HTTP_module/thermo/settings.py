@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_bootstrap5',
     'users',
     'sensors',
     'api',
@@ -115,6 +116,7 @@ USE_TZ = True
 # STATIC_URL = '/static/'
 STATIC_URL = '/static/django/'
 STATIC_ROOT = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"), ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/media/'

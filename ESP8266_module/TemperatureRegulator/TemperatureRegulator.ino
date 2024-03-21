@@ -481,14 +481,12 @@ void loop()
     if(CurrentMode == SHOW_TEMP)  ShowTemp(CurrentTemp);
   }
 
-  if(http_timer >= SERVER_POST_MESSAGE_INTERVAL_x10ms)    // Отправка данных на сервер
+  if(http_timer >= SERVER_POST_MESSAGE_INTERVAL_x10ms
+      && CurrentMode == SHOW_TEMP)    // Отправка данных на сервер
   {
+    post_measurement(TempFloat);
+    get_data();
     http_timer=0;
-    if(CurrentMode == SHOW_TEMP)
-    {
-      post_measurement(TempFloat);
-      get_data();
-    }
   }
 
 }

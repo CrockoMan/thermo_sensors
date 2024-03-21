@@ -38,7 +38,7 @@ class SensorViewSet(viewsets.ModelViewSet):
         return Response({'Sensor': 'Measurement saved'},
                         status=HTTPStatus.OK)
 
-    @action(methods=['post', 'get'], url_path='settings/(?P<pk>[^/.]+)?',
+    @action(methods=['post', 'get'], url_path='settings/(?P<pk>\\d+)',
             detail=False)
     def sensor_settings(self, request, pk):
         """Запись и чтение уставок датчика."""
