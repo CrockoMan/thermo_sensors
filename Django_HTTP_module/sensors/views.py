@@ -16,6 +16,7 @@ def get_sensors(id=None):
 
     return sensors
 
+
 def get_sensor_last_settings(sensor):
     settings = SensorSettings.objects.filter(sensor=sensor).order_by(
         '-sensor_datetime')[:1]
@@ -23,6 +24,7 @@ def get_sensor_last_settings(sensor):
         # settings = settings[0].sensor_settings
         return settings
     return None
+
 
 def sensor_index(request):
     """Главная страница."""
