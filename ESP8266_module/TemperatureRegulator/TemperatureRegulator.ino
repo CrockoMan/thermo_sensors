@@ -203,6 +203,7 @@ void setup() {
   {
     Serial.println("WiFi Connected");
     Serial.println(WiFi.localIP());
+    get_settings();
   }
   else
   {
@@ -297,7 +298,7 @@ void post_data(String json, String endpoint)
 }
 
 
-void get_data()
+void get_settings()
 {
   int httpCode;
   gson::Parser parsed;
@@ -485,7 +486,7 @@ void loop()
       && CurrentMode == SHOW_TEMP)    // Отправка данных на сервер
   {
     post_measurement(TempFloat);
-    get_data();
+    get_settings();
     http_timer=0;
   }
 }

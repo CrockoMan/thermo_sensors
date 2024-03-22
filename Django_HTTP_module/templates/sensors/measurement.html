@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+      {% block measurement %}
+        <div class="row">
+          <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between p-md-1">
+                  <div class="d-flex flex-row">
+                    <div class="align-self-center">
+                      <h2 class="h1 mb-0 me-4">
+                        {% if sensor_data %}
+                          {% with sensor_data|first as first %}
+                              {{ first.sensor_value }}
+                          {% endwith %}
+                        {% else %}
+                            - - - -
+                        {% endif %} °C
+                      </h2>
+                    </div>
+                    <div>
+                      <h4>Измерено</h4>
+                      <p class="mb-0">
+                        {% if sensor_data %}
+                          {% with sensor_data|first as first %}
+                              {{ first.sensor_datetime }}
+                          {% endwith %}
+                        {% else %}
+                            Данные отсутствуют
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="far fa-heart text-danger fa-3x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between p-md-1">
+                  <div class="d-flex flex-row">
+                    <div class="align-self-center">
+                      <h2 class="h1 mb-0 me-4">
+                        {% if sensor_settings %}
+                          {% with sensor_settings|first as first %}
+                              {{ first.sensor_settings }}
+                          {% endwith %}
+                        {% else %}
+                            - - - -
+                        {% endif %} °C
+                      </h2>
+                    </div>
+                    <div>
+                      <h4>Установлено</h4>
+                      <p class="mb-0">
+                        {% if sensor_settings %}
+                          {% with sensor_settings|first as first %}
+                              {{ first.sensor_datetime }}
+                          {% endwith %}
+                        {% else %}
+                            Данные отсутствуют
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="align-self-center">
+                    <i class="fas fa-heart text-success fa-3x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endblock %}
+      <!--Section: Statistics with subtitles-->
+
+      <!--Section: Sales Performance KPIs-->
+      {% block measurement_table %}
+      <section class="mb-4">
+        <div class="card">
+          <div class="card-header text-center py-3">
+            <h5 class="mb-0 text-center">
+              <strong>История измерений</strong>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover text-nowrap">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Измеренная t</th>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Целевая t</th>
+                    <th scope="col">Дата</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% if sensor_data %}
+                  {% for sensor in sensor_data %}
+                      <tr>
+                        <th scope="row"></th>
+                        <td>{{ sensor.sensor_value }}</td>
+                        <td>{{ sensor.sensor_datetime }}</td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                      </tr>
+                  {% endfor %}
+                {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endblock %}
+      <!--Section: Sales Performance KPIs-->
