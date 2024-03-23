@@ -21,7 +21,8 @@
 
 #define TEMP_READ_INTERVAL_x10ms 5
 
-#define SERVER_POST_MESSAGE_INTERVAL_x10ms 10*10
+//#define SERVER_POST_MESSAGE_INTERVAL_x10ms 10*10
+#define SERVER_POST_MESSAGE_INTERVAL_x10ms 60*10
 
 
 #define LED_PIN 16
@@ -317,6 +318,7 @@ void get_settings()
     Serial.println(endpoint);
     http.begin(client, endpoint);  // HTTP
     http.addHeader("Content-Type", "application/json");
+    http.addHeader("user-agent", "Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36");
 
     Serial.print("[HTTP] GET...\n");
 
@@ -325,7 +327,7 @@ void get_settings()
     {
       Serial.printf("[HTTP] GET... code: %d\n", httpCode);
 
-      if (httpCode == HTTP_CODE_OK)
+      if (httpCode == HTTP_CODE_OK  || httpCode == HTTP_CODE_MOVED_PERMANENTLY)
       {
         String payload = http.getString();
         Serial.println("received payload:\n<<");
