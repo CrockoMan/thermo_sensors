@@ -62,6 +62,7 @@ class SensorViewSet(viewsets.ModelViewSet):
 
             return Response({'Sensor': 'Settings saved'},
                             status=HTTPStatus.OK)
+
         if self.request.method == "GET":
             settings = SensorSettings.objects.order_by(
                 '-sensor_datetime').filter(sensor=sensor)

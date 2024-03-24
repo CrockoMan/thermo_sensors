@@ -95,9 +95,9 @@
                   <tr>
                     <th scope="col"></th>
                     <th scope="col">Измеренная t</th>
-                    <th scope="col">Дата</th>
+                    <th scope="col">Дата / Время</th>
                     <th scope="col">Целевая t</th>
-                    <th scope="col">Дата</th>
+                    <th scope="col">Дата / Время</th>
                     <th scope="col"></th>
                   </tr>
                 </thead>
@@ -107,9 +107,12 @@
                       <tr>
                         <th scope="row"></th>
                         <td>{{ sensor.sensor_value }}</td>
-                        <td>{{ sensor.sensor_datetime }}</td>
-                        <td> </td>
-                        <td> </td>
+                        <td>{{ sensor.sensor_datetime|date:'d-m-Y H:i' }}</td>
+                        {% if sensor.sensor_target_setting_value %}
+                          <td>{{ sensor.sensor_target_setting_value }} </td>
+                        {% endif %}
+                        <td>
+                            {{ sensor.sensor_target_setting_datetime|date:'d-m-Y H:i' }}</td>
                         <td> </td>
                       </tr>
                   {% endfor %}
