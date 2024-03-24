@@ -48,9 +48,9 @@ Ticker Timer;
 volatile unsigned char TimerTick=0, LedTimerTicker=0, isTicker=0,
                        CustomTimerTicker=0, SensorTimer=0, ReadTempComplete=0;
 volatile unsigned int http_timer=0;
-char CurrentTemp;
+//char CurrentTemp;
 unsigned char TempTimer, Brightness, WiFiConnected, CurrentMode=SHOW_TEMP;
-float TempFloat=0, TargetTemp=29;
+volatile float TempFloat=0, CurrentTemp=0, TargetTemp=29;
 
 
 EncButton eb(13, 12, 14);
@@ -83,7 +83,7 @@ void timerIsr()
     TempFloat=sensor1.getTemp();
     sensor1.requestTemp();
     CurrentTemp=TempFloat;
-    regulator.input = TempFloat;                      // сообщаем регулятору текущую температуру
+    regulator.input = CurrentTemp;                    // сообщаем регулятору текущую температуру
     digitalWrite(RELAY_PIN, regulator.getResult());   // отправляем на реле (ОС работает по своему таймеру)
     ReadTempComplete=1;
   }
@@ -94,9 +94,10 @@ void timerIsr()
 void SaveSettings()
 {
     EEPROM.begin(512);
-    EEPROM.write(0, TargetTemp);
-    EEPROM.write(1, Brightness);
+    if( TargetTemp!=ReadTemp())       EEPROM.write(0, TargetTemp);
+    if( Brightness!=ReadBrightness()) EEPROM.write(5, Brightness);
     EEPROM.commit();
+    EEPROM.end();
 
     regulator.setpoint = TargetTemp;
 }
@@ -104,30 +105,43 @@ void SaveSettings()
 
 void CheckAndSaveSettings()
 {
+  float prev_TargetTemp = TargetTemp;
+  char prev_Brightness = Brightness;
   if(TargetTemp<MIN_SENSOR_VALUE || TargetTemp>MAX_SENSOR_VALUE)
   {
     TargetTemp = MIN_SENSOR_VALUE + (MAX_SENSOR_VALUE-MIN_SENSOR_VALUE)/2;
-    SaveSettings();
+//    SaveSettings();
   }
   if(Brightness>7)
   {
     Brightness = 1;
+//    SaveSettings();
+  }
+  if(prev_TargetTemp!=TargetTemp 
+     || prev_Brightness!=Brightness 
+     || regulator.setpoint != TargetTemp)
+  {
+    Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     SaveSettings();
   }
 }
 
 unsigned char ReadTemp()
 {
+    float Temp=0;
     EEPROM.begin(512);
-    TargetTemp = EEPROM.read(0);
-    return(TargetTemp);
+    Temp = EEPROM.read(0);
+    EEPROM.end();
+    return(Temp);
 }
 
 unsigned char ReadBrightness()
 {
+    unsigned char bright=1;
     EEPROM.begin(512);
-    Brightness = EEPROM.read(1);
-    return(Brightness);
+    bright = EEPROM.read(5);
+    EEPROM.end();
+    return(bright);
 }
 
 void ShowTemp(float Temp)
@@ -183,7 +197,7 @@ void setup() {
 
 
   Serial.println();
-  Serial.print("Установленная температура: ");
+  Serial.print("--> Установленная температура: ");
   Serial.println(TargetTemp);
   Serial.print("Установленная яркость: ");
   Serial.println(Brightness);
@@ -347,9 +361,11 @@ void get_settings()
           if(new_value!=TargetTemp)
           {
             TargetTemp = new_value;
+            Serial.println("+++++++++++++++++++++++++");
             CheckAndSaveSettings();
             Serial.println("New settings saved");
           }
+          else Serial.println("-----------------------------");
         }
 
       }
@@ -480,7 +496,10 @@ void loop()
   {
     ReadTempComplete=0;
     Serial.print("Current temp = ");
-    Serial.println(TempFloat);
+    Serial.print(TempFloat);
+    Serial.print(" Target temp = ");
+    Serial.println(regulator.setpoint);
+
     if(CurrentMode == SHOW_TEMP)  ShowTemp(CurrentTemp);
   }
 
