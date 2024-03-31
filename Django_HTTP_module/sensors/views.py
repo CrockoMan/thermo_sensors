@@ -4,16 +4,16 @@ from django.shortcuts import get_object_or_404, render
 from sensors.models import Sensor, SensorData, SensorSettings
 
 
-def get_sensors(id=None):
+def get_sensors(id=None, request=None):
     """Получить все записи Sensors"""
-    # posts = Sensor.objects.select_related('category',
-    #                                     'location',
-    #                                     'author').order_by('-pub_date')
-    sensors = Sensor.objects.select_related('location').order_by('id')
+    if request.user.is_authenticated:
+        sensors = Sensor.objects.filter(
+            location__user=request.user
+        ).select_related('location').order_by('id')
+    else:
+        sensors = Sensor.objects.select_related('location').order_by('id')
     if id is not None:
         sensors = sensors.filter(id=id)
-    # if sensors_count:
-    #     return posts.annotate(comment_count=Count('comments'))
 
     return sensors
 
@@ -29,7 +29,7 @@ def get_sensor_last_settings(sensor):
 
 def sensor_index(request):
     """Главная страница."""
-    sensors = get_sensors()
+    sensors = get_sensors(request=request)
     return render(request, 'base.html',
                   {'sensors': sensors})
     # return render(request, 'sensors/sensors.html', {'sensors': sensors})
@@ -37,8 +37,11 @@ def sensor_index(request):
 
 def sensor_detail(request, sensor_id=None):
     """Вывод данных одного сенсора."""
-    sensor = get_object_or_404(Sensor, id=sensor_id)
-    sensors = get_sensors()
+    if request.user.is_authenticated:
+        sensor = get_object_or_404(Sensor, id=sensor_id, location__user = request.user)
+    else:
+        sensor = get_object_or_404(Sensor, id=sensor_id)
+    sensors = get_sensors(request=request)
     sensor_settings = get_sensor_last_settings(sensor)
     # sensor_data = SensorData.objects.filter(sensor=sensor.id).order_by(
     #     '-sensor_datetime')[:10]
@@ -66,7 +69,8 @@ FROM sensors_sensordata
 JOIN sensors_sensor ON sensors_sensor.id=sensors_sensordata.sensor_id
 WHERE sensors_sensor.id=%s
 ORDER BY sensors_sensordata.sensor_datetime DESC
-;""", [sensor_id])[:10]
+LIMIT 10
+;""", [sensor_id])
 
     return render(request, 'sensors/measurement.html',
                   {'sensor_data': sensor_data,
