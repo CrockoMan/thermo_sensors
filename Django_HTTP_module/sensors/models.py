@@ -1,5 +1,7 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from thermo.settings import SENSOR_MAX_VALUE, SENSOR_MIN_VALUE
 from users.models import User
 
 MAX_LENGTH = 20
@@ -63,7 +65,18 @@ class SensorData(models.Model):
 class SensorSettings(models.Model):
     sensor_settings = models.DecimalField('Установка',
                                        max_digits=5,
-                                       decimal_places=2)
+                                       decimal_places=2,
+                                       validators=(
+                                           MinValueValidator(
+                                               SENSOR_MIN_VALUE,
+                                               message=f'min {SENSOR_MIN_VALUE}'
+                                           ),
+                                           MaxValueValidator(
+                                               SENSOR_MAX_VALUE,
+                                               message=f'max {SENSOR_MAX_VALUE}'
+                                           ),
+                                       ),
+                                          )
     sensor_datetime = models.DateTimeField('Добавлено',
                                            auto_now_add=True)
     sensor = models.ForeignKey(Sensor,

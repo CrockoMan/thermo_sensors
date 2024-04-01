@@ -139,3 +139,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
 }
+
+SENSOR_MIN_VALUE = 10
+SENSOR_MAX_VALUE = 35

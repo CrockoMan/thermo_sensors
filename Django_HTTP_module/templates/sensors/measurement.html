@@ -76,6 +76,21 @@
           </div>
         </div>
       </section>
+        {% if user.is_authenticated and sensor_id %}
+          <section class="mb-4">
+            <div class="card">
+                <form action="/sensors/{{ sensor_id }}/" method="post">
+                    {% csrf_token %}
+                    <label for="new_point_name">Изменить наименование</label><br>
+                    <input type="text" name="new_point_name" id="new_point_name"><br><br>
+                    <label for="new_settings">Новое целевое значение</label><br>
+                    <input type="number" name="new_settings" id="new_settings" ><br><br>
+                    <button classs="btn btn-success" type="submit">Сохранить</button>
+                </form>
+            </div>
+          </section>
+        {% endif %}
+
       {% endblock %}
       <!--Section: Statistics with subtitles-->
 

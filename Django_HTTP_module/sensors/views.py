@@ -2,6 +2,7 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404, render
 
 from sensors.models import Sensor, SensorData, SensorSettings
+from thermo.settings import SENSOR_MAX_VALUE, SENSOR_MIN_VALUE
 
 
 def get_sensors(id=None, request=None):
@@ -34,45 +35,67 @@ def sensor_index(request):
                   {'sensors': sensors})
     # return render(request, 'sensors/sensors.html', {'sensors': sensors})
 
+def check_min_max_value(value):
+    return value >= SENSOR_MIN_VALUE and value <= SENSOR_MAX_VALUE
+
+
+def add_sensor(request):
+    pass
+
 
 def sensor_detail(request, sensor_id=None):
     """Вывод данных одного сенсора."""
     if request.user.is_authenticated:
-        sensor = get_object_or_404(Sensor, id=sensor_id, location__user = request.user)
+        sensor = get_object_or_404(Sensor,
+                                   id=sensor_id,
+                                   location__user=request.user
+                                   )
     else:
         sensor = get_object_or_404(Sensor, id=sensor_id)
+
+    if request.method == 'POST' and request.user.is_authenticated:
+        new_point_name = request.POST.get('new_point_name', '').strip()
+        new_settings = request.POST.get('new_settings', '')
+
+        if sensor.name != new_point_name:
+            Sensor.objects.filter(id=sensor_id).update(name=new_point_name)
+        if new_settings and check_min_max_value(int(new_settings)):
+            SensorSettings.objects.create(sensor_settings=int(new_settings),
+                                          sensor=sensor)
+
     sensors = get_sensors(request=request)
     sensor_settings = get_sensor_last_settings(sensor)
     # sensor_data = SensorData.objects.filter(sensor=sensor.id).order_by(
     #     '-sensor_datetime')[:10]
 
     sensor_data = SensorData.objects.raw(
-"""SELECT sensors_sensordata.id, 
-		sensors_sensordata.sensor_id,
-		sensors_sensordata.sensor_value, 
-		sensors_sensordata.sensor_datetime,
-		(SELECT sensors_sensorsettings.sensor_settings
-		FROM sensors_sensorsettings
-		WHERE sensors_sensorsettings.sensor_datetime<sensors_sensordata.sensor_datetime
-			  AND sensors_sensorsettings.sensor_id=sensors_sensordata.sensor_id
-		ORDER BY sensors_sensorsettings.sensor_datetime DESC
-		LIMIT 1) 
-		    AS sensor_target_setting_value,
-		(SELECT sensors_sensorsettings.sensor_datetime
-		FROM sensors_sensorsettings
-		WHERE sensors_sensorsettings.sensor_datetime<sensors_sensordata.sensor_datetime
-			  AND sensors_sensorsettings.sensor_id=sensors_sensordata.sensor_id
-		ORDER BY sensors_sensorsettings.sensor_datetime DESC
-		LIMIT 1) 
-		    AS sensor_target_setting_datetime
-FROM sensors_sensordata
-JOIN sensors_sensor ON sensors_sensor.id=sensors_sensordata.sensor_id
-WHERE sensors_sensor.id=%s
-ORDER BY sensors_sensordata.sensor_datetime DESC
-LIMIT 10
-;""", [sensor_id])
+    """SELECT sensors_sensordata.id, 
+            sensors_sensordata.sensor_id,
+            sensors_sensordata.sensor_value, 
+            sensors_sensordata.sensor_datetime,
+            (SELECT sensors_sensorsettings.sensor_settings
+            FROM sensors_sensorsettings
+            WHERE sensors_sensorsettings.sensor_datetime<sensors_sensordata.sensor_datetime
+                  AND sensors_sensorsettings.sensor_id=sensors_sensordata.sensor_id
+            ORDER BY sensors_sensorsettings.sensor_datetime DESC
+            LIMIT 1) 
+                AS sensor_target_setting_value,
+            (SELECT sensors_sensorsettings.sensor_datetime
+            FROM sensors_sensorsettings
+            WHERE sensors_sensorsettings.sensor_datetime<sensors_sensordata.sensor_datetime
+                  AND sensors_sensorsettings.sensor_id=sensors_sensordata.sensor_id
+            ORDER BY sensors_sensorsettings.sensor_datetime DESC
+            LIMIT 1) 
+                AS sensor_target_setting_datetime
+    FROM sensors_sensordata
+    JOIN sensors_sensor ON sensors_sensor.id=sensors_sensordata.sensor_id
+    WHERE sensors_sensor.id=%s
+    ORDER BY sensors_sensordata.sensor_datetime DESC
+    LIMIT 10
+    ;""", [sensor_id])
 
     return render(request, 'sensors/measurement.html',
                   {'sensor_data': sensor_data,
                    'sensor_settings': sensor_settings,
-                   'sensors': sensors})
+                   'sensors': sensors,
+                   'sensor_id': sensor_id})
