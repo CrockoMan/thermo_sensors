@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Авторизация
+{% endblock %}
+
+{% block measurement %}
+<!-- <div class="large-offset-3 large-6 columns"> -->
+<div class="col-1 content-left"> </div>
+    <div class="col-10 content-center">
+        {% if user.is_authenticated %}
+            <h1> Добавить датчик </h1>
+            <form action="{% url 'sensors:add_sensor' %}" method="post">
+                {% csrf_token %}
+                <label for="location">Расположение</label><br>
+                <input type="text" name="location" id="location"><br><br>
+                <label for="point_name">Наименование</label><br>
+                <input type="text" name="point_name" id="point_name"><br><br>
+                <label for="target">Целевое значение</label><br>
+                <input type="number" name="target" id="target" value="28"><br><br>
+                <label for="period">Период опроса сек.</label><br>
+                <input type="number" name="period" id="period" value="60"><br><br>
+                {% if error %}
+                    <label class="error">{{ error }}</label><br>
+                {% endif %}
+                <button classs="btn btn-success"
+                        type="submit">Сохранить</button>
+            </form>
+        {% else %}
+            <br><h3> Пользователь не авторизован </h3>
+        {% endif %}
+    </div>
+<div class="col-1 content-right"></div>
+{% endblock %}
+{% block measurement_table %}
+{% endblock %}
+

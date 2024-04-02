@@ -26,10 +26,10 @@ class Sensor(admin.ModelAdmin):
 
 @admin.register(SensorData)
 class SensorData(admin.ModelAdmin):
-    list_display = ('sensor_value', 'sensor_datetime', 'sensor')
+    list_display = ('sensor_value', 'sensor_datetime', 'sensor', 'sensor_id')
     list_filter = ('sensor',)
     # search_fields = ('name',)
-    ordering = ('sensor_datetime',)
+    ordering = ('-sensor_datetime',  'sensor_id')
 
     @admin.display(description='Датчик',)
     def sensor(self, obj):
@@ -38,10 +38,10 @@ class SensorData(admin.ModelAdmin):
 
 @admin.register(SensorSettings)
 class SensorSettings(admin.ModelAdmin):
-    list_display = ('sensor_settings', 'sensor_datetime', 'sensor')
+    list_display = ('sensor_settings', 'sensor_datetime', 'sensor','sensor_id')
     list_filter = ('sensor',)
     # search_fields = ('name',)
-    ordering = ('sensor_datetime',)
+    ordering = ('-sensor_datetime', 'sensor_id')
 
     @admin.display(description='Установка',)
     def sensor(self, obj):

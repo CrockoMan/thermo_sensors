@@ -8,6 +8,10 @@ def render_to_response(param, args):
     pass
 
 
+def register(request):
+    return render(request, 'users/register.html')
+
+
 def login(request, user=None):
     args = {}
 #    args.update(csrf(request))

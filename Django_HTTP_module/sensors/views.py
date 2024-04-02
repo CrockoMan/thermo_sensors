@@ -1,7 +1,7 @@
 from django.db.models import F
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-from sensors.models import Sensor, SensorData, SensorSettings
+from sensors.models import Location, Sensor, SensorData, SensorSettings
 from thermo.settings import SENSOR_MAX_VALUE, SENSOR_MIN_VALUE
 
 
@@ -39,8 +39,45 @@ def check_min_max_value(value):
     return value >= SENSOR_MIN_VALUE and value <= SENSOR_MAX_VALUE
 
 
+def add_new_sensor(request, location, point_name, target, period):
+    location = Location.objects.create(name=location, user=request.user)
+    print('Location={location')
+    sensor = Sensor.objects.create(name=point_name, location=location)
+    print('sensor={sensor')
+    sensor_settings = SensorSettings.objects.create(sensor=sensor,
+                                                    sensor_settings=target)
+    print('sensor_settings={sensor_settings')
+    return sensor
+
+
 def add_sensor(request):
-    pass
+    sensors = get_sensors(request=request)
+    error = ''
+    if request.method == 'POST' and request.user.is_authenticated:
+        location = request.POST.get('location', '').strip()
+        point_name = request.POST.get('point_name', '').strip()
+        target = request.POST.get('target', '')
+        period = request.POST.get('period', '')
+        print('Данные получены')
+        if (location != ''
+            and point_name != ''
+            and target != ''
+            and period != ''
+            and check_min_max_value(int(target))
+        ):
+            print('Данные отправлены на сохранение')
+            new_sensor = add_new_sensor(request=request,
+                                        location=location,
+                                        point_name=point_name,
+                                        target=int(target),
+                                        period=int(period))
+            return redirect('sensors:sensor_detail',
+                            sensor_id=new_sensor.id)
+        else:
+            error = 'Проверьте параметры'
+    return render(request, 'sensors/add_sensor.html',
+                  {'sensors': sensors,
+                   'error': error})
 
 
 def sensor_detail(request, sensor_id=None):
