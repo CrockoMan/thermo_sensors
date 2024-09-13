@@ -1,4 +1,4 @@
-# Управление и мониторинг режима работы термоконтроллеров
+# Управление и мониторинг режима работы термоконтроллеров MVP
 ### [Адрес отладки https://reptiles.tortuga-center.ru](<https://reptiles.tortuga-center.ru/sensors/1/>)</br>
 Стек: Python, FastAPI, HTML, CSS, C, ESP8266
 ### Находится в разработке.
